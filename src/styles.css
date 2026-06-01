@@ -343,6 +343,56 @@ tr:last-child td {
   padding: 18px;
 }
 
+.section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.section-heading h4,
+.section-heading p {
+  margin: 0;
+}
+
+.section-heading p {
+  color: #667085;
+}
+
+.otp-stats-panel {
+  margin-top: 20px;
+}
+
+.otp-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.otp-summary-grid > div {
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.otp-summary-grid span {
+  color: #667085;
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.otp-summary-grid strong {
+  font-size: 26px;
+}
+
+.compact-table table {
+  min-width: 0;
+}
+
 .details-panel h4,
 .photo-card h4,
 .empty-state h4 {
@@ -530,6 +580,7 @@ dd {
   nav,
   .stat-grid,
   .detail-grid,
+  .otp-summary-grid,
   .settings-grid,
   .provider-grid {
     grid-template-columns: 1fr;
