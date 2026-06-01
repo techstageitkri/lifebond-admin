@@ -5,6 +5,7 @@ const navItems = [
   ['/users', 'Users'],
   ['/photos', 'Photos'],
   ['/reports', 'Reports'],
+  ['/content', 'Content'],
   ['/change-password', 'Password'],
 ];
 
