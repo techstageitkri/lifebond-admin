@@ -4,7 +4,7 @@ import { api, dataOf } from '../api/client.js';
 import { EmptyState, ErrorMessage, Loading, PageHeader, StatusBadge } from '../components/ui.jsx';
 import { formatValue } from '../utils/format.js';
 
-const statusOptions = ['all', 'pending', 'active', 'suspended', 'deleted'];
+const statusOptions = ['all', 'new', 'setup_required', 'pending_approval', 'active', 'suspended', 'deleted'];
 
 export default function Users() {
   const [searchParams, setSearchParams] = useSearchParams();

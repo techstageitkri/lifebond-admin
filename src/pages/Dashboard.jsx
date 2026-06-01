@@ -5,7 +5,7 @@ import { ErrorMessage, Loading, PageHeader } from '../components/ui.jsx';
 
 const stats = [
   ['totalUsers', 'Total Users', '/users'],
-  ['pendingProfiles', 'Pending Profiles', '/users?status=pending'],
+  ['pendingProfiles', 'Pending Profiles', '/users?status=pending_approval'],
   ['activeUsers', 'Active Users', '/users?status=active'],
   ['pendingPhotos', 'Pending Photos', '/photos'],
   ['reportsCount', 'Reports Count', '/reports'],
