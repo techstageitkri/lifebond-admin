@@ -8,6 +8,7 @@ import Photos from './pages/Photos.jsx';
 import Reports from './pages/Reports.jsx';
 import ChangePassword from './pages/ChangePassword.jsx';
 import Content from './pages/Content.jsx';
+import AuthSettings from './pages/AuthSettings.jsx';
 
 const isAuthed = () => Boolean(localStorage.getItem('lifebond_admin_token'));
 
@@ -34,6 +35,7 @@ export default function App() {
         <Route path="reports" element={<Reports />} />
         <Route path="change-password" element={<ChangePassword />} />
         <Route path="content" element={<Content />} />
+        <Route path="settings/authentication/otp" element={<AuthSettings />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

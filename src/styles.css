@@ -412,6 +412,69 @@ dd {
   gap: 16px;
 }
 
+.settings-layout {
+  display: grid;
+  gap: 18px;
+}
+
+.settings-grid,
+.provider-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.provider-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 16px;
+}
+
+.settings-panel h4 {
+  margin: 0;
+}
+
+.radio-panel {
+  background: #ffffff;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 18px;
+}
+
+.radio-panel legend {
+  color: #1f2933;
+  font-weight: 800;
+  padding: 0 4px;
+}
+
+.radio-row,
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.radio-row input,
+.checkbox-row input {
+  min-height: auto;
+  width: auto;
+}
+
+.field-hint {
+  color: #667085;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
 .login-page {
   min-height: 100vh;
   display: grid;
@@ -466,7 +529,9 @@ dd {
 
   nav,
   .stat-grid,
-  .detail-grid {
+  .detail-grid,
+  .settings-grid,
+  .provider-grid {
     grid-template-columns: 1fr;
   }
 
