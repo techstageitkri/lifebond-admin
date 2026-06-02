@@ -525,6 +525,48 @@ dd {
   margin-top: 18px;
 }
 
+.branding-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.branding-preview {
+  background: #f9fafb;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  min-height: 180px;
+  padding: 16px;
+}
+
+.branding-preview span {
+  color: #475467;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.branding-preview img {
+  align-self: center;
+  justify-self: center;
+  max-height: 120px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.branding-placeholder {
+  align-items: center;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  color: #667085;
+  display: flex;
+  font-size: 13px;
+  font-weight: 700;
+  justify-content: center;
+  min-height: 120px;
+}
+
 .login-page {
   min-height: 100vh;
   display: grid;
@@ -582,7 +624,8 @@ dd {
   .detail-grid,
   .otp-summary-grid,
   .settings-grid,
-  .provider-grid {
+  .provider-grid,
+  .branding-preview-grid {
     grid-template-columns: 1fr;
   }
 

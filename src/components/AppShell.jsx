@@ -8,6 +8,7 @@ const navItems = [
   ['/problem-reports', 'Problem Reports'],
   ['/content', 'Content'],
   ['/settings/authentication/otp', 'Auth Settings'],
+  ['/settings/branding', 'Branding'],
   ['/change-password', 'Password'],
 ];
 
