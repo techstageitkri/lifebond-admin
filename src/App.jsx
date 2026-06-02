@@ -6,6 +6,7 @@ import Users from './pages/Users.jsx';
 import UserDetails from './pages/UserDetails.jsx';
 import Photos from './pages/Photos.jsx';
 import Reports from './pages/Reports.jsx';
+import ProblemReports from './pages/ProblemReports.jsx';
 import ChangePassword from './pages/ChangePassword.jsx';
 import Content from './pages/Content.jsx';
 import AuthSettings from './pages/AuthSettings.jsx';
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="users/:id" element={<UserDetails />} />
         <Route path="photos" element={<Photos />} />
         <Route path="reports" element={<Reports />} />
+        <Route path="problem-reports" element={<ProblemReports />} />
         <Route path="change-password" element={<ChangePassword />} />
         <Route path="content" element={<Content />} />
         <Route path="settings/authentication/otp" element={<AuthSettings />} />

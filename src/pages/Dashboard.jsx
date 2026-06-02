@@ -9,6 +9,7 @@ const stats = [
   ['activeUsers', 'Active Users', '/users?status=active'],
   ['pendingPhotos', 'Pending Photos', '/photos'],
   ['reportsCount', 'Reports Count', '/reports'],
+  ['problemReportsCount', 'Problem Reports', '/problem-reports'],
 ];
 
 const providerLabels = {
