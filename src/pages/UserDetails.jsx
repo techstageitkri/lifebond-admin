@@ -12,6 +12,44 @@ const profileGroups = [
   ['Religious', ['sect', 'sunni_madhab', 'sub_community', 'religious_level', 'prays_regularly', 'quran_reading_level', 'halal_lifestyle', 'wears_hijab', 'wears_niqab', 'beard_style']],
 ];
 
+const additionalDetailFields = [
+  { key: 'profile_code', label: 'Profile Code', type: 'input' },
+  { key: 'revert_status', label: 'Revert Status', type: 'select', options: ['unknown', 'born_muslim', 'revert'] },
+  { key: 'scholars', label: 'Scholars / Institutes', type: 'textarea' },
+  { key: 'students_of_knowledge', label: 'Students of Knowledge', type: 'textarea' },
+  { key: 'islamic_education_details', label: 'Islamic Education Details', type: 'textarea' },
+  { key: 'hobbies_interests', label: 'Hobbies / Interests', type: 'textarea' },
+  { key: 'family_details', label: 'Family Details', type: 'textarea' },
+  { key: 'father_details', label: 'Father Details', type: 'textarea' },
+  { key: 'mother_details', label: 'Mother Details', type: 'textarea' },
+  { key: 'siblings_details', label: 'Siblings Details', type: 'textarea' },
+  { key: 'medical_notes', label: 'Medical Notes', type: 'textarea' },
+  { key: 'important_information', label: 'Important Information', type: 'textarea' },
+  { key: 'preferred_age_text', label: 'Preferred Age', type: 'input' },
+  { key: 'preferred_location_text', label: 'Preferred Locations', type: 'textarea' },
+  { key: 'preferred_ethnicity', label: 'Preferred Ethnicity', type: 'textarea' },
+  { key: 'preferred_languages', label: 'Preferred Languages', type: 'input' },
+  { key: 'open_to_revert', label: 'Open to Revert', type: 'select', options: ['not_specified', 'yes', 'no', 'maybe'] },
+  { key: 'open_to_divorcee_widow', label: 'Open to Divorcee / Widow', type: 'select', options: ['not_specified', 'yes', 'no', 'maybe'] },
+  { key: 'accepting_polygamy', label: 'Accepting Polygamy', type: 'select', options: ['not_specified', 'yes', 'no', 'maybe', 'not_applicable'] },
+  { key: 'expectations_from_spouse', label: 'Expectations from Spouse', type: 'textarea' },
+  { key: 'additional_requirements', label: 'Additional Requirements', type: 'textarea' },
+  { key: 'raw_source_text', label: 'Raw Source Text', type: 'textarea', wide: true },
+];
+
+const emptyAdditionalDetails = additionalDetailFields.reduce((form, field) => {
+  form[field.key] = field.type === 'select' ? field.options[0] : '';
+  return form;
+}, {});
+
+const formFromAdditionalDetails = (details = {}) => additionalDetailFields.reduce((form, field) => {
+  const value = details?.[field.key];
+  form[field.key] = Array.isArray(value)
+    ? value.join(', ')
+    : value || (field.type === 'select' ? field.options[0] : '');
+  return form;
+}, {});
+
 const readField = (user, key) => {
   if (user.profile && key in user.profile) return user.profile[key];
   if (user.profile?.muslim_profile && key in user.profile.muslim_profile) return user.profile.muslim_profile[key];
@@ -21,13 +59,18 @@ const readField = (user, key) => {
 export default function UserDetails() {
   const { id } = useParams();
   const [user, setUser] = useState(null);
+  const [detailsForm, setDetailsForm] = useState(emptyAdditionalDetails);
   const [busy, setBusy] = useState(false);
+  const [savingDetails, setSavingDetails] = useState(false);
   const [error, setError] = useState('');
+  const [detailsMessage, setDetailsMessage] = useState('');
 
   const fetchUser = useCallback(async () => {
     setError('');
     try {
-      setUser(dataOf(await api.get(`/admin/users/${id}`)));
+      const nextUser = dataOf(await api.get(`/admin/users/${id}`));
+      setUser(nextUser);
+      setDetailsForm(formFromAdditionalDetails(nextUser.profile?.additional_details));
     } catch (err) {
       setError(err.message);
     }
@@ -49,6 +92,34 @@ export default function UserDetails() {
       setError(err.message);
     } finally {
       setBusy(false);
+    }
+  };
+
+  const updateDetailsField = (key, value) => {
+    setDetailsForm((current) => ({ ...current, [key]: value }));
+  };
+
+  const saveAdditionalDetails = async (event) => {
+    event.preventDefault();
+    if (!user.profile) return;
+    setSavingDetails(true);
+    setError('');
+    setDetailsMessage('');
+    try {
+      const saved = dataOf(await api.put(`/admin/users/${id}/additional-details`, detailsForm));
+      setUser((current) => ({
+        ...current,
+        profile: {
+          ...current.profile,
+          additional_details: saved,
+        },
+      }));
+      setDetailsForm(formFromAdditionalDetails(saved));
+      setDetailsMessage('Imported profile details saved');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSavingDetails(false);
     }
   };
 
@@ -101,6 +172,51 @@ export default function UserDetails() {
               </div>
             ))}
           </div>
+
+          <form className="form-panel additional-details-panel" onSubmit={saveAdditionalDetails}>
+            <div className="section-heading">
+              <div>
+                <h4>Imported Profile Details</h4>
+                <p>Long-form fields imported from the original profile text. Raw source stays admin-only.</p>
+              </div>
+              <button className="primary-button" disabled={savingDetails || !user.profile}>
+                {savingDetails ? 'Saving...' : 'Save Details'}
+              </button>
+            </div>
+            {detailsMessage && <div className="success-message">{detailsMessage}</div>}
+            {!user.profile ? (
+              <div className="empty-state">Create a profile before adding imported details.</div>
+            ) : (
+              <div className="additional-details-grid">
+                {additionalDetailFields.map((field) => (
+                  <label key={field.key} className={field.wide ? 'wide-field' : ''}>
+                    {field.label}
+                    {field.type === 'select' ? (
+                      <select
+                        value={detailsForm[field.key]}
+                        onChange={(event) => updateDetailsField(field.key, event.target.value)}
+                      >
+                        {field.options.map((option) => (
+                          <option key={option} value={option}>{formatValue(option)}</option>
+                        ))}
+                      </select>
+                    ) : field.type === 'textarea' ? (
+                      <textarea
+                        rows={field.wide ? 10 : 4}
+                        value={detailsForm[field.key]}
+                        onChange={(event) => updateDetailsField(field.key, event.target.value)}
+                      />
+                    ) : (
+                      <input
+                        value={detailsForm[field.key]}
+                        onChange={(event) => updateDetailsField(field.key, event.target.value)}
+                      />
+                    )}
+                  </label>
+                ))}
+              </div>
+            )}
+          </form>
 
           <div className="photos-grid">
             {(user.profile?.photos || []).map((photo) => (
