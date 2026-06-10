@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, dataOf } from '../api/client.js';
-import { EmptyState, ErrorMessage, Loading, PageHeader, StatusBadge } from '../components/ui.jsx';
+import {
+  EmptyState,
+  ErrorMessage,
+  Loading,
+  PageHeader,
+  PromptDialog,
+  StatusBadge,
+} from '../components/ui.jsx';
 import { formatValue } from '../utils/format.js';
 
 export default function Photos() {
@@ -8,6 +15,7 @@ export default function Photos() {
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState('');
+  const [rejectPhotoId, setRejectPhotoId] = useState(null);
 
   const fetchPhotos = useCallback(async () => {
     setLoading(true);
@@ -21,21 +29,29 @@ export default function Photos() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchPhotos();
-  }, [fetchPhotos]);
+  useEffect(() => { fetchPhotos(); }, [fetchPhotos]);
 
   const moderate = async (photo, action) => {
-    const payload = {};
-    if (action === 'reject') {
-      const reason = window.prompt('Rejection reason');
-      if (reason === null) return;
-      payload.reason = reason.trim();
-    }
+    if (action === 'reject') { setRejectPhotoId(photo.id); return; }
     setBusyId(photo.id);
     setError('');
     try {
-      await api.put(`/admin/photos/${photo.id}/${action}`, payload);
+      await api.put(`/admin/photos/${photo.id}/${action}`, {});
+      await fetchPhotos();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const submitRejectReason = async (reason) => {
+    if (!rejectPhotoId) return;
+    setBusyId(rejectPhotoId);
+    setRejectPhotoId(null);
+    setError('');
+    try {
+      await api.put(`/admin/photos/${rejectPhotoId}/reject`, { reason: reason.trim() });
       await fetchPhotos();
     } catch (err) {
       setError(err.message);
@@ -46,30 +62,66 @@ export default function Photos() {
 
   return (
     <section className="page-section">
-      <PageHeader title="Photo Moderation" description="Approve or reject profile photos waiting for review." />
+      <PageHeader
+        title="Photo Moderation"
+        description="Approve or reject profile photos awaiting review."
+        action={
+          photos.length > 0 && !loading
+            ? <span style={{ fontSize: 13, color: 'var(--text-3)', fontWeight: 600 }}>{photos.length} pending</span>
+            : null
+        }
+      />
+
       <ErrorMessage error={error} />
+
       {loading ? (
         <Loading />
       ) : photos.length === 0 ? (
-        <EmptyState title="No pending photos" description="New uploads that need review will appear here." />
+        <EmptyState
+          title="Queue is clear"
+          description="New uploads waiting for review will appear here."
+        />
       ) : (
         <div className="moderation-grid">
           {photos.map((photo) => (
-            <article className="photo-card" key={photo.id}>
-              <img src={photo.photo_url} alt="" />
-              <div>
-                <h4>{photo.profile?.name || 'Profile photo'}</h4>
-                <p>{formatValue(photo.profile?.city)} · {formatValue(photo.profile?.gender)}</p>
+            <div key={photo.id} className="photo-card">
+              <img src={photo.photo_url} alt="" loading="lazy" />
+              <div className="photo-card-body">
+                <h4 style={{ fontSize: 13.5 }}>{photo.profile?.name || 'Unknown'}</h4>
+                <p style={{ fontSize: 12.5, color: 'var(--text-3)' }}>
+                  {formatValue(photo.profile?.city)} · {formatValue(photo.profile?.gender)}
+                </p>
                 <StatusBadge value={photo.moderation_status} />
+                <div className="row-actions" style={{ marginTop: 4 }}>
+                  <button
+                    className="small-button primary-button"
+                    disabled={busyId === photo.id}
+                    onClick={() => moderate(photo, 'approve')}
+                  >
+                    Approve
+                  </button>
+                  <button
+                    className="small-button danger-button"
+                    disabled={busyId === photo.id}
+                    onClick={() => moderate(photo, 'reject')}
+                  >
+                    Reject
+                  </button>
+                </div>
               </div>
-              <div className="row-actions">
-                <button disabled={busyId === photo.id} onClick={() => moderate(photo, 'approve')}>Approve</button>
-                <button disabled={busyId === photo.id} className="danger-button" onClick={() => moderate(photo, 'reject')}>Reject</button>
-              </div>
-            </article>
+            </div>
           ))}
         </div>
       )}
+
+      <PromptDialog
+        open={Boolean(rejectPhotoId)}
+        title="Rejection reason"
+        description="Add a short moderation note shared with the user."
+        confirmLabel="Submit rejection"
+        onSubmit={submitRejectReason}
+        onCancel={() => setRejectPhotoId(null)}
+      />
     </section>
   );
 }

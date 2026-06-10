@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { api } from '../api/client.js';
-import { ErrorMessage, PageHeader } from '../components/ui.jsx';
+import { ErrorMessage, PageHeader, SuccessMessage } from '../components/ui.jsx';
 
 export default function ChangePassword() {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -10,12 +10,12 @@ export default function ChangePassword() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const submit = async (event) => {
-    event.preventDefault();
+  const submit = async (e) => {
+    e.preventDefault();
     setMessage('');
     setError('');
     if (newPassword !== confirmPassword) {
-      setError('New password and confirmation do not match');
+      setError('New password and confirmation do not match.');
       return;
     }
     setLoading(true);
@@ -27,7 +27,7 @@ export default function ChangePassword() {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      setMessage('Password changed');
+      setMessage('Password changed successfully.');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -37,23 +37,54 @@ export default function ChangePassword() {
 
   return (
     <section className="page-section narrow-section">
-      <PageHeader title="Change Password" description="Update the current admin account password." />
-      <form className="form-panel" onSubmit={submit}>
+      <PageHeader title="Change Password" description="Update your admin account credentials." />
+
+      <form className="form-panel" style={{ display: 'grid', gap: 'var(--sp-4)' }} onSubmit={submit}>
         <ErrorMessage error={error} />
-        {message && <div className="success-message">{message}</div>}
+        <SuccessMessage message={message} />
+
         <label>
           Current password
-          <input type="password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} required />
+          <input
+            type="password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            autoComplete="current-password"
+            required
+          />
         </label>
+
         <label>
           New password
-          <input type="password" minLength="8" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} required />
+          <input
+            type="password"
+            minLength="8"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            autoComplete="new-password"
+            required
+          />
         </label>
+
         <label>
           Confirm new password
-          <input type="password" minLength="8" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required />
+          <input
+            type="password"
+            minLength="8"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            autoComplete="new-password"
+            required
+          />
         </label>
-        <button className="primary-button" disabled={loading}>{loading ? 'Saving...' : 'Change Password'}</button>
+
+        <p className="field-hint">Password must be at least 8 characters long.</p>
+
+        <div>
+          <button className="primary-button" type="submit" disabled={loading}>
+            {loading ? 'Saving…' : 'Change Password'}
+          </button>
+        </div>
       </form>
     </section>
   );

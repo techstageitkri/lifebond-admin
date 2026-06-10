@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api, dataOf } from '../api/client.js';
-import { ErrorMessage, Loading, PageHeader } from '../components/ui.jsx';
+import { ErrorMessage, Loading, PageHeader, SuccessMessage } from '../components/ui.jsx';
 
 const emptyForm = {
   primary_logo_url: '',
@@ -10,16 +10,14 @@ const emptyForm = {
 
 const ICON_VARIANTS = [
   { value: 'gradient', label: 'Gradient App Icon' },
-  { value: 'plain', label: 'Without Gradient App Icon' },
+  { value: 'plain', label: 'Plain App Icon' },
 ];
 
-function normalize(payload) {
-  return {
-    primary_logo_url: payload.primary_logo_url || '',
-    splash_logo_url: payload.splash_logo_url || '',
-    launcher_icon_variant: payload.launcher_icon_variant || 'gradient',
-  };
-}
+const normalize = (payload) => ({
+  primary_logo_url: payload.primary_logo_url || '',
+  splash_logo_url: payload.splash_logo_url || '',
+  launcher_icon_variant: payload.launcher_icon_variant || 'gradient',
+});
 
 function LogoPreview({ title, url }) {
   return (
@@ -28,7 +26,7 @@ function LogoPreview({ title, url }) {
       {url ? (
         <img src={url} alt={title} />
       ) : (
-        <div className="branding-placeholder">Bundled mobile fallback</div>
+        <div className="branding-placeholder">Mobile bundled fallback</div>
       )}
     </div>
   );
@@ -44,14 +42,12 @@ export default function BrandingSettings() {
 
   useEffect(() => {
     api.get('/admin/branding-settings')
-      .then((response) => setForm(normalize(dataOf(response))))
+      .then((r) => setForm(normalize(dataOf(r))))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
 
-  const updateField = (key, value) => {
-    setForm((current) => ({ ...current, [key]: value }));
-  };
+  const updateField = (key, value) => setForm((cur) => ({ ...cur, [key]: value }));
 
   const uploadImage = async (target, file) => {
     if (!file) return;
@@ -62,11 +58,11 @@ export default function BrandingSettings() {
       const data = new FormData();
       data.append('target', target);
       data.append('image', file);
-      const response = await api.post('/admin/branding-settings/upload', data, {
+      const r = await api.post('/admin/branding-settings/upload', data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      setForm(normalize(dataOf(response).settings));
-      setMessage('Branding image uploaded');
+      setForm(normalize(dataOf(r).settings));
+      setMessage('Branding image uploaded successfully.');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -74,16 +70,15 @@ export default function BrandingSettings() {
     }
   };
 
-  const submit = async (event) => {
-    event.preventDefault();
+  const submit = async (e) => {
+    e.preventDefault();
     setSaving(true);
     setError('');
     setMessage('');
-
     try {
-      const response = await api.put('/admin/branding-settings', form);
-      setForm(normalize(dataOf(response)));
-      setMessage('Branding settings saved');
+      const r = await api.put('/admin/branding-settings', form);
+      setForm(normalize(dataOf(r)));
+      setMessage('Branding settings saved.');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -97,87 +92,93 @@ export default function BrandingSettings() {
     <section className="page-section">
       <PageHeader
         title="Branding Settings"
-        description="Manage login logo, splash logo, and the bundled launcher icon variant used by the mobile app."
+        description="Manage login logo, splash logo, and launcher icon variant for the mobile app."
       />
 
       <form className="settings-layout" onSubmit={submit}>
         <ErrorMessage error={error} />
-        {message && <div className="success-message">{message}</div>}
+        <SuccessMessage message={message} />
 
-        <section className="form-panel settings-panel">
-          <h4>Login & Splash Logos</h4>
+        <div className="settings-panel card">
+          <div className="section-heading">
+            <div>
+              <h4>Login &amp; Splash Logos</h4>
+              <p>Upload or provide URLs for logos displayed in the mobile app.</p>
+            </div>
+          </div>
           <div className="settings-grid">
             <label>
               Login Logo URL
               <input
                 type="url"
-                placeholder="https://..."
+                placeholder="https://…"
                 value={form.primary_logo_url}
-                onChange={(event) => updateField('primary_logo_url', event.target.value)}
+                onChange={(e) => updateField('primary_logo_url', e.target.value)}
               />
-              <span className="field-hint">Used on the mobile number login screen.</span>
+              <span className="field-hint">Shown on the mobile login screen.</span>
             </label>
             <label>
               Upload Login Logo
               <input
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
-                onChange={(event) => uploadImage('primary_logo_url', event.target.files?.[0])}
+                onChange={(e) => uploadImage('primary_logo_url', e.target.files?.[0])}
               />
-              {uploading === 'primary_logo_url' && <span className="field-hint">Uploading...</span>}
+              {uploading === 'primary_logo_url' && <span className="field-hint">Uploading…</span>}
             </label>
             <label>
               Splash Logo URL
               <input
                 type="url"
-                placeholder="Leave blank to use login logo"
+                placeholder="Leave blank to reuse login logo"
                 value={form.splash_logo_url}
-                onChange={(event) => updateField('splash_logo_url', event.target.value)}
+                onChange={(e) => updateField('splash_logo_url', e.target.value)}
               />
-              <span className="field-hint">Leave blank to reuse the login logo.</span>
+              <span className="field-hint">Leave blank to reuse the login logo on splash.</span>
             </label>
             <label>
               Upload Splash Logo
               <input
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
-                onChange={(event) => uploadImage('splash_logo_url', event.target.files?.[0])}
+                onChange={(e) => uploadImage('splash_logo_url', e.target.files?.[0])}
               />
-              {uploading === 'splash_logo_url' && <span className="field-hint">Uploading...</span>}
+              {uploading === 'splash_logo_url' && <span className="field-hint">Uploading…</span>}
             </label>
           </div>
-
           <div className="branding-preview-grid">
             <LogoPreview title="Login Logo Preview" url={form.primary_logo_url} />
             <LogoPreview title="Splash Logo Preview" url={form.splash_logo_url || form.primary_logo_url} />
           </div>
-        </section>
+        </div>
 
-        <section className="form-panel settings-panel">
-          <h4>Launcher Icon</h4>
+        <div className="settings-panel card">
+          <div className="section-heading">
+            <div>
+              <h4>Launcher Icon Variant</h4>
+              <p>Switches between icon variants bundled in the released APK/AAB.</p>
+            </div>
+          </div>
           <fieldset className="radio-panel">
             <legend>Active App Icon</legend>
-            {ICON_VARIANTS.map((option) => (
-              <label className="radio-row" key={option.value}>
+            {ICON_VARIANTS.map((opt) => (
+              <label className="radio-row" key={opt.value}>
                 <input
                   type="radio"
                   name="launcher_icon_variant"
-                  value={option.value}
-                  checked={form.launcher_icon_variant === option.value}
-                  onChange={(event) => updateField('launcher_icon_variant', event.target.value)}
+                  value={opt.value}
+                  checked={form.launcher_icon_variant === opt.value}
+                  onChange={(e) => updateField('launcher_icon_variant', e.target.value)}
                 />
-                <span>{option.label}</span>
+                {opt.label}
               </label>
             ))}
           </fieldset>
-          <span className="field-hint">
-            The mobile app can switch only between icon variants bundled in the released APK/AAB.
-          </span>
-        </section>
+        </div>
 
         <div className="settings-actions">
-          <button type="submit" disabled={saving || Boolean(uploading)}>
-            {saving ? 'Saving...' : 'Save Branding Settings'}
+          <button type="submit" className="primary-button" disabled={saving || Boolean(uploading)}>
+            {saving ? 'Saving…' : 'Save Branding Settings'}
           </button>
         </div>
       </form>
