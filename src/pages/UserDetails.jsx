@@ -63,21 +63,45 @@ const profileGroups = [
       { key: 'family_values',           label: 'Family Values',           type: 'select', options: ['traditional','moderate','modern'] },
     ],
   },
-  {
-    title: 'Religious',
-    fields: [
-      { key: 'sect',               label: 'Sect',               type: 'select', options: ['sunni','shia','sufi','other'] },
-      { key: 'sunni_madhab',       label: 'Sunni Madhab',       type: 'select', options: ['shafi','hanafi','maliki','hanbali','other'] },
-      { key: 'sub_community',      label: 'Sub Community',      type: 'select', options: ['rowther','labbai','marakkar','deccan','mapilla','other'] },
-      { key: 'religious_level',    label: 'Religious Level',    type: 'select', options: ['very_practicing','practicing','moderate','learning'] },
-      { key: 'prays_regularly',    label: 'Prays Regularly',    type: 'select', options: ['5_times','sometimes','rarely'] },
-      { key: 'quran_reading_level',label: 'Quran Reading Level',type: 'select', options: ['fluent','basic','learning','cannot_read'] },
-      { key: 'halal_lifestyle',    label: 'Halal Lifestyle',    type: 'select', options: ['strict','moderate','flexible'] },
-      { key: 'wears_hijab',        label: 'Wears Hijab',        type: 'select', options: ['yes','no','sometimes'] },
-      { key: 'wears_niqab',        label: 'Wears Niqab',        type: 'select', options: ['yes','no','sometimes'] },
-      { key: 'beard_style',        label: 'Beard Style',        type: 'select', options: ['full','trimmed','clean_shaven'] },
-    ],
-  },
+];
+
+const muslimProfileGroup = {
+  title: 'Religious - Muslim',
+  fields: [
+    { key: 'sect',               label: 'Sect',               type: 'select', options: ['sunni','shia','sufi','other'] },
+    { key: 'sunni_madhab',       label: 'Sunni Madhab',       type: 'select', options: ['shafi','hanafi','maliki','hanbali','other'] },
+    { key: 'sub_community',      label: 'Sub Community',      type: 'select', options: ['rowther','labbai','marakkar','deccan','mapilla','other'] },
+    { key: 'religious_level',    label: 'Religious Level',    type: 'select', options: ['very_practicing','practicing','moderate','learning'] },
+    { key: 'prays_regularly',    label: 'Prays Regularly',    type: 'select', options: ['5_times','sometimes','rarely'] },
+    { key: 'quran_reading_level',label: 'Quran Reading Level',type: 'select', options: ['fluent','basic','learning','cannot_read'] },
+    { key: 'halal_lifestyle',    label: 'Halal Lifestyle',    type: 'select', options: ['strict','moderate','flexible'] },
+    { key: 'wears_hijab',        label: 'Wears Hijab',        type: 'select', options: ['yes','no','sometimes'] },
+    { key: 'wears_niqab',        label: 'Wears Niqab',        type: 'select', options: ['yes','no','sometimes'] },
+    { key: 'beard_style',        label: 'Beard Style',        type: 'select', options: ['full','trimmed','clean_shaven'] },
+  ],
+};
+
+const hinduProfileGroup = {
+  title: 'Religious - Hindu',
+  fields: [
+    { key: 'caste',              label: 'Caste',              type: 'text' },
+    { key: 'sub_caste',          label: 'Sub-caste',          type: 'text' },
+    { key: 'gotra',              label: 'Gotra',              type: 'text' },
+    { key: 'rashi',              label: 'Rashi',              type: 'select', options: ['mesha','rishabha','mithuna','kataka','simha','kanya','tula','vrischika','dhanus','makara','kumbha','meena','unknown'] },
+    { key: 'nakshatra',          label: 'Nakshatra',          type: 'select', options: ['ashwini','bharani','krittika','rohini','mrigashirsha','ardra','punarvasu','pushya','ashlesha','magha','purva_phalguni','uttara_phalguni','hasta','chitra','swati','vishakha','anuradha','jyeshtha','mula','purva_ashadha','uttara_ashadha','shravana','dhanishta','shatabhisha','purva_bhadrapada','uttara_bhadrapada','revati','unknown'] },
+    { key: 'dosham',             label: 'Dosham',             type: 'select', options: ['none','mangal','sarpa','kalathra','other','unknown'] },
+    { key: 'manglik_status',     label: 'Manglik Status',     type: 'select', options: ['manglik','non_manglik','partial','unknown'] },
+    { key: 'religious_level',    label: 'Religious Level',    type: 'select', options: ['very_practicing','practicing','moderate','spiritual','not_practicing'] },
+    { key: 'temple_visit_frequency', label: 'Temple Visits',  type: 'select', options: ['daily','weekly','monthly','occasionally','rarely'] },
+    { key: 'family_tradition',   label: 'Family Tradition',   type: 'text' },
+    { key: 'mother_deity',       label: 'Mother Deity',       type: 'text' },
+    { key: 'horoscope_required', label: 'Horoscope Required', type: 'boolean' },
+  ],
+};
+
+const profileGroupsForUser = (user) => [
+  ...profileGroups,
+  user?.community === 'hindu' ? hinduProfileGroup : muslimProfileGroup,
 ];
 
 // ─── Additional detail fields ────────────────────────────────────────────────
@@ -110,12 +134,13 @@ const additionalDetailFields = [
 const readProfileField = (user, key) => {
   if (user.profile && key in user.profile) return user.profile[key];
   if (user.profile?.muslim_profile && key in user.profile.muslim_profile) return user.profile.muslim_profile[key];
+  if (user.profile?.hindu_profile && key in user.profile.hindu_profile) return user.profile.hindu_profile[key];
   return '';
 };
 
 const buildProfileForm = (user) => {
   const form = {};
-  for (const { fields } of profileGroups) {
+  for (const { fields } of profileGroupsForUser(user)) {
     for (const field of fields) {
       const val = readProfileField(user, field.key);
       form[field.key] = val === null || val === undefined ? '' : String(val);
@@ -409,7 +434,7 @@ export default function UserDetails() {
 
           {/* ── Editable profile group panels ── */}
           <div className="detail-grid">
-            {profileGroups.map((group) => (
+            {profileGroupsForUser(user).map((group) => (
               <ProfileGroupPanel
                 key={group.title}
                 group={group}
