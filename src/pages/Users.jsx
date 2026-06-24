@@ -13,6 +13,7 @@ import {
 import { formatValue } from '../utils/format.js';
 
 const STATUS_OPTIONS = ['all', 'new', 'setup_required', 'pending_approval', 'active', 'suspended', 'deleted'];
+const COMMUNITY_OPTIONS = ['all', 'muslim', 'hindu', 'christian', 'others'];
 const PAGE_SIZE = 12;
 
 export default function Users() {
@@ -20,6 +21,7 @@ export default function Users() {
   const [users, setUsers] = useState([]);
   const [q, setQ] = useState(searchParams.get('q') || '');
   const [status, setStatus] = useState(searchParams.get('status') || 'all');
+  const [community, setCommunity] = useState(searchParams.get('community') || 'all');
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
@@ -30,13 +32,13 @@ export default function Users() {
     setLoading(true);
     setError('');
     try {
-      setUsers(dataOf(await api.get('/admin/users', { params: { q, status } })));
+      setUsers(dataOf(await api.get('/admin/users', { params: { q, status, community } })));
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [q, status]);
+  }, [q, status, community]);
 
   useEffect(() => { fetchUsers(); }, [fetchUsers]);
 
@@ -45,6 +47,7 @@ export default function Users() {
     const next = {};
     if (q.trim()) next.q = q.trim();
     if (status !== 'all') next.status = status;
+    if (community !== 'all') next.community = community;
     setPage(1);
     setSearchParams(next);
   };
@@ -52,6 +55,7 @@ export default function Users() {
   const clearFilters = () => {
     setQ('');
     setStatus('all');
+    setCommunity('all');
     setSearchParams({});
     setPage(1);
   };
@@ -119,6 +123,15 @@ export default function Users() {
               <option key={opt} value={opt}>{formatValue(opt)}</option>
             ))}
           </select>
+          <select
+            value={community}
+            onChange={(e) => setCommunity(e.target.value)}
+            style={{ minWidth: 170 }}
+          >
+            {COMMUNITY_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>{opt === 'all' ? 'All communities' : formatValue(opt)}</option>
+            ))}
+          </select>
           <button className="primary-button" type="submit">Search</button>
           <button className="ghost-button" type="button" onClick={clearFilters}>Clear</button>
         </form>
@@ -147,6 +160,7 @@ export default function Users() {
                 <th>Name</th>
                 <th>Mobile</th>
                 <th>City</th>
+                <th>Community</th>
                 <th>Status</th>
                 <th>Joined</th>
                 <th>Actions</th>
@@ -162,6 +176,7 @@ export default function Users() {
                   </td>
                   <td style={{ color: 'var(--text-2)' }}>{formatValue(user.mobile_number)}</td>
                   <td style={{ color: 'var(--text-2)' }}>{formatValue(user.profile?.city)}</td>
+                  <td style={{ color: 'var(--text-2)' }}>{formatValue(user.community)}</td>
                   <td><StatusBadge value={user.status} /></td>
                   <td style={{ color: 'var(--text-3)', fontSize: 13 }}>
                     {new Date(user.created_at).toLocaleDateString()}

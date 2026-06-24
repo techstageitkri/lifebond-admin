@@ -48,6 +48,12 @@ const ICON = {
       <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
     </svg>
   ),
+  admins: (
+    <svg viewBox="0 0 20 20" fill="currentColor" className="sidebar-icon">
+      <path d="M10 2a5 5 0 00-5 5v1.1A5 5 0 0010 13a5 5 0 005-4.9V7a5 5 0 00-5-5z" />
+      <path d="M3 18a7 7 0 0114 0H3z" />
+    </svg>
+  ),
   logout: (
     <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
       <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
@@ -74,9 +80,10 @@ const NAV_GROUPS = [
   {
     label: 'Configuration',
     items: [
-      ['/content', 'App Content', ICON.content],
-      ['/settings/authentication/otp', 'Auth Settings', ICON.shield],
-      ['/settings/branding', 'Branding', ICON.palette],
+      ['/admins', 'Admins', ICON.admins, { superAdminOnly: true }],
+      ['/content', 'App Content', ICON.content, { superAdminOnly: true }],
+      ['/settings/authentication/otp', 'Auth Settings', ICON.shield, { superAdminOnly: true }],
+      ['/settings/branding', 'Branding', ICON.palette, { superAdminOnly: true }],
     ],
   },
   {
@@ -87,18 +94,24 @@ const NAV_GROUPS = [
   },
 ];
 
-const flatNav = NAV_GROUPS.flatMap((g) => g.items);
-
 export default function AppShell() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const admin = JSON.parse(localStorage.getItem('lifebond_admin') || '{}');
+  const isSuperAdmin = admin.is_super_admin || admin.role === 'super_admin' || Number(admin.id) === 1;
+  const navGroups = useMemo(() => (
+    NAV_GROUPS.map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !item[3]?.superAdminOnly || isSuperAdmin),
+    })).filter((group) => group.items.length > 0)
+  ), [isSuperAdmin]);
+  const flatNavItems = useMemo(() => navGroups.flatMap((g) => g.items), [navGroups]);
 
   const pageTitle = useMemo(() => {
-    const item = flatNav.find(([path]) => pathname === path || (path !== '/' && pathname.startsWith(`${path}/`)));
+    const item = flatNavItems.find(([path]) => pathname === path || (path !== '/' && pathname.startsWith(`${path}/`)));
     return item?.[1] || 'Admin Console';
-  }, [pathname]);
+  }, [flatNavItems, pathname]);
 
   const closeSidebar = () => setIsSidebarOpen(false);
 
@@ -124,7 +137,7 @@ export default function AppShell() {
             </div>
           </div>
 
-          {NAV_GROUPS.map((group) => (
+          {navGroups.map((group) => (
             <nav key={group.label} aria-label={group.label}>
               <p className="sidebar-section-label">{group.label}</p>
               <div className="sidebar-nav">
@@ -150,7 +163,7 @@ export default function AppShell() {
             <div className="sidebar-avatar">{adminInitial}</div>
             <div className="sidebar-user-info">
               <strong>{adminName}</strong>
-              <span>Administrator</span>
+              <span>{isSuperAdmin ? 'Super Admin' : 'Community Admin'}</span>
             </div>
             <button
               type="button"

@@ -551,6 +551,53 @@ label {
 /* ── Row actions ── */
 .row-actions { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
 
+.admin-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.4fr);
+  gap: var(--sp-5);
+  align-items: start;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-4);
+}
+
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-2);
+}
+
+.form-span { grid-column: 1 / -1; }
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+}
+
+.checkbox-panel {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+
 /* ══════════════════════════════════════
    BADGE
 ══════════════════════════════════════ */
@@ -1122,6 +1169,7 @@ dd { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--text); }
   .detail-grid,
   .settings-grid,
   .provider-grid,
+  .admin-grid,
   .additional-details-grid,
   .branding-preview-grid {
     grid-template-columns: 1fr;
@@ -1140,6 +1188,8 @@ dd { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--text); }
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
   .photos-grid, .moderation-grid { grid-template-columns: 1fr; }
   .otp-summary-grid { grid-template-columns: repeat(2, 1fr); }
+  .form-grid,
+  .checkbox-grid { grid-template-columns: 1fr; }
   .login-stats { grid-template-columns: 1fr; }
 
   .row-actions { flex-direction: column; align-items: stretch; }
